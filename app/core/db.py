@@ -1,5 +1,8 @@
-from sqlalchemy import Column, Integer
+from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, false, Integer
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import declarative_base, declared_attr, sessionmaker
 
 from app.core.config import settings
@@ -15,6 +18,23 @@ class PreBase:
 
 
 Base = declarative_base(cls=PreBase)
+
+
+class Charity(Base):
+    """ Родительский класс для таблиц проектов и пожертвований """
+
+    __abstract__ = True
+
+    full_amount = Column(Integer)
+    invested_amount = Column(Integer, server_default='0')
+    fully_invested = Column(Boolean, server_default=false())
+    create_date = Column(DateTime, default=datetime.utcnow)
+    close_date = Column(DateTime)
+
+    @hybrid_property
+    def remains(self):
+        return self.full_amount - self.invested_amount
+
 
 engine = create_async_engine(settings.database_url)
 

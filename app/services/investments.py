@@ -1,5 +1,3 @@
-from datetime import datetime as dt
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,21 +14,14 @@ async def check_for_available_investments(
     if not available_donations:
         return obj
     for donation in available_donations:
-        if (obj.invested_amount + donation.available) >= obj.full_amount:
-            donation.invested_amount += obj.needed_amount
-            if donation.invested_amount == donation.full_amount:
-                donation.fully_invested = True
-                donation.close_date = dt.utcnow()
+        if (obj.invested_amount + donation.remains) >= obj.full_amount:
+            donation.invested_amount += obj.remains
             obj.invested_amount = obj.full_amount
-            obj.fully_invested = True
-            obj.close_date = dt.utcnow()
             session.add(donation)
             break
         else:
-            obj.invested_amount += donation.available
+            obj.invested_amount += donation.remains
             donation.invested_amount = donation.full_amount
-            donation.fully_invested = True
-            donation.close_date = dt.utcnow()
             session.add(donation)
     session.add(obj)
     await session.commit()

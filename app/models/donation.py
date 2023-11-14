@@ -1,23 +1,18 @@
 from datetime import datetime
 
-from sqlalchemy import (
-    Boolean, Column, DateTime, false, ForeignKey, Integer, Text
-)
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import Column, event, ForeignKey, Integer, Text
 
-from app.core.db import Base
+from app.core.db import Charity
 
 
-class Donation(Base):
+class Donation(Charity):
     """ Модель пожертвования """
     user_id = Column(Integer, ForeignKey('user.id'))
     comment = Column(Text)
-    full_amount = Column(Integer)
-    invested_amount = Column(Integer, server_default='0')
-    fully_invested = Column(Boolean, server_default=false())
-    create_date = Column(DateTime, default=datetime.utcnow)
-    close_date = Column(DateTime)
 
-    @hybrid_property
-    def available(self):
-        return self.full_amount - self.invested_amount
+
+@event.listens_for(Donation.invested_amount, 'set')
+def after_invested_equals_full(target, value, oldvalue, initiator):
+    if value == target.full_amount:
+        target.close_date = datetime.utcnow()
+        target.fully_invested = True
