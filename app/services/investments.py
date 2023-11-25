@@ -31,7 +31,7 @@ async def check_for_available_investments(
 
 async def check_for_projects_to_invest(
     obj: Donation, session: AsyncSession
-) -> Donation:
+) -> None:
     available_projects = await session.execute(select(CharityProject).where(
         CharityProject.fully_invested == False # noqa
     ))
