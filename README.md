@@ -66,10 +66,6 @@
   ```
   alembic upgrade head
   ```
-* Выполните миграции
-  ```
-  alembic upgrade head
-  ```
 * Запустите проект
    ```
    uvicorn app.main:app
